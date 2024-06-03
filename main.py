@@ -160,7 +160,8 @@ def validate_args(
         raise parser.error(
             'Log direcotry cannot be the same as source of rep'
         )
-    if log.relative_to(src) or log.relative_to(rep):
+    print(*src.parents)
+    if src in log.parents or rep in log.parents:
         raise parser.error(
             "Log directory cannot be inside source or replica folder"
         )
