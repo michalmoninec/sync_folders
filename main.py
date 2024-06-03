@@ -149,13 +149,31 @@ def get_parser() -> argparse.ArgumentParser:
     )
     return parser
 
-def validate_args() -> None:
-    pass
+def validate_args(
+        parser: argparse.ArgumentParser, 
+        src: Path, 
+        rep: Path, 
+        log: Path
+    ) -> None:
+    print(*log.parents)
+    if log == src or log == rep:
+        raise parser.error(
+            'Log direcotry cannot be the same as source of rep'
+        )
+    if log.relative_to(src) or log.relative_to(rep):
+        raise parser.error(
+            "Log directory cannot be inside source or replica folder"
+        )
 
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
-    validate_args()
+    validate_args(
+        parser, 
+        args.src_root_path, 
+        args.rep_root_path, 
+        args.log_dir_path
+    )
 
     config_logging(args.log_dir_path)
 
