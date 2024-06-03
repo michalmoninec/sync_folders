@@ -26,14 +26,6 @@ def get_valid_interval(argument: str) -> int:
     else:
         raise argparse.ArgumentTypeError("Sync interval is not greater than 0")
 
-
-# def included_in_list_parents(dir_path: Path, dir_list: list) -> bool:
-#     for dir_i in dir_list:
-#         if dir_path in dir_i.parents:
-#             return True
-#     return False
-
-
 def files_have_same_hash(fl1_path: Path, fl2_path: Path) -> bool:
     with open(fl1_path, 'rb') as fl1:
         with open(fl2_path, 'rb') as fl2:
@@ -48,7 +40,6 @@ def create_directories(src_dir: Path, rep_dir: Path) -> None:
         p_rel = rep_dir / path.relative_to(src_dir)
         if not p_rel.exists():
             create_dir(p_rel)
-
 
 def remove_directories(src_dir: Path, rep_dir: Path) -> None:
     remove_paths = []
@@ -85,7 +76,6 @@ def sync_folders(src_root_path: Path, rep_root_path: Path) -> None:
     remove_files(src_root_path, rep_root_path)
     remove_directories(src_root_path, rep_root_path)
 
-
 def keyboard_interrupt_handle(func):
     def wrapper(*args, **kwargs):
         try:
@@ -107,8 +97,6 @@ def run_sync(src_path: Path, rep_path: Path, sync_interval: int) -> None:
         sync_folders, src_path, rep_path
     )
 
-    # sync_folders(src_path, rep_path)
-
     while True:
         schedule.run_pending()
         
@@ -116,7 +104,7 @@ def run_sync(src_path: Path, rep_path: Path, sync_interval: int) -> None:
 def config_logging(log_path: Path) -> None:
     log_name = datetime.now().strftime("%Y_%m_%d_%H%M%S.log")
     log_path = Path(args.log_dir_path, log_name)
-    #todo - string and dateformat to single variables. messy
+    #TODO - string and dateformat to single variables. messy
     logging.basicConfig(
         filename=log_path, 
         level=logging.INFO, 
