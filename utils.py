@@ -5,11 +5,7 @@ from pathlib import Path
 def logging_handle(prefix: str, suffix: int) -> None:
     def logging_outer(func):
         def wrapper(*args, **kwargs):
-            try:
-                func(*args, **kwargs)
-                logging.info(f"{prefix}: {args[suffix]}")
-            except Exception as e:
-                logging.info(e)
+            logging.info(f"{prefix}: {args[suffix]}")
             return func(*args, **kwargs)
         return wrapper
     return logging_outer

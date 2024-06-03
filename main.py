@@ -65,8 +65,6 @@ def remove_files (src_dir: Path, rep_dir: Path) -> None:
     for path in rep_dir.glob("**/*.*"):
         p_rel = src_dir / path.relative_to(rep_dir)
         if not p_rel.exists():
-            remove_paths.append(path)
-    for path in remove_paths:
         remove_file(path)
 
 def sync_folders(src_root_path: Path, rep_root_path: Path) -> None:
