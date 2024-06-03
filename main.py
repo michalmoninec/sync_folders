@@ -8,10 +8,11 @@ from typing import List
 import schedule
 import logging
 from datetime import datetime
+from utils import create_file, remove_file, update_file, create_dir, remove_dir
 
 
 def get_valid_abs_path(argument: str) -> Path:
-    if os.path.exists(Path(argument).absolute()):
+    if Path(argument).absolute().exists():
         return Path(argument).absolute()
     else:
         raise argparse.ArgumentTypeError(
@@ -25,62 +26,12 @@ def get_valid_interval(argument: str) -> int:
     else:
         raise argparse.ArgumentTypeError("Sync interval is not greater than 0")
 
-def handle_file(mode: str, src_root_path, rep_root_path, **kwargs) -> None:
-    if 's_rel' in kwargs:
-        src = Path(src_root_path,kwargs['s_rel'])
-        dst = Path(rep_root_path,kwargs['s_rel'])
 
-    if mode == "update":
-        rm_dst = Path(rep_root_path, kwargs["s_rel"])
-        os.remove(rm_dst)
-        shutil.copy(src, dst)
-        txt = 'UPDATED FILE: '
-        logging.info(f"{txt:<15} {dst}")
-
-    elif mode == "create":
-        shutil.copy(src, dst)
-        txt = 'CREATED FILE: '
-        logging.info(f"{txt:<15} {dst}")
-
-    elif mode == "remove":
-        rm_dst = Path(rep_root_path, kwargs["r_rel"])
-        os.remove(rm_dst)
-        txt = 'REMOVED FILE: '
-        logging.info(f"{txt:<15} {rm_dst}")
-
-def handle_dir(mode: str, rep_root_path, rel_path) -> None:
-    dst = Path(rep_root_path, rel_path)
-    if mode == 'create':
-        os.makedirs(dst)
-        txt = 'CREATED DIR: '
-        logging.info(f"{txt:<15} {dst}")
-    elif mode == 'remove':
-        shutil.rmtree(dst, ignore_errors=True)
-        txt = 'REMOVED DIR: '
-        logging.info(f"{txt:<15} {dst}")
-
-
-
-def get_files_path_list(absolute_path: Path) -> List[Path]:
-    file_list = []
-    dir_list = []
-    for path, subdirs, files in os.walk(absolute_path, topdown=False):
-        for name in files:
-            file_path = Path(Path(path).relative_to(absolute_path),name)
-            file_list.append(file_path)
-        for dir in subdirs:
-            dir_path = Path(Path(path).relative_to(absolute_path),dir)
-            if not included_in_list_parents(dir_path, dir_list):
-                dir_list.append(dir_path) 
-
-    return file_list, dir_list
-
-
-def included_in_list_parents(dir_path: Path, dir_list: list) -> bool:
-    for dir_i in dir_list:
-        if dir_path in dir_i.parents:
-            return True
-    return False
+# def included_in_list_parents(dir_path: Path, dir_list: list) -> bool:
+#     for dir_i in dir_list:
+#         if dir_path in dir_i.parents:
+#             return True
+#     return False
 
 
 def files_have_same_hash(fl1_path: Path, fl2_path: Path) -> bool:
@@ -92,46 +43,71 @@ def files_have_same_hash(fl1_path: Path, fl2_path: Path) -> bool:
             else:
                 return False
 
-def sync_folders(src_root_path: Path, rep_root_path: Path) -> None:
-    src_files_path_list, src_dirs_path_list = get_files_path_list(src_root_path)
-    rep_files_path_list, rep_dirs_path_list = get_files_path_list(rep_root_path)
+def create_directories(src_dir: Path, rep_dir: Path) -> None:
+    for path in src_dir.glob("*/**"):
+        p_rel = rep_dir / path.relative_to(src_dir)
+        if not p_rel.exists():
+            create_dir(p_rel)
 
-    #separate function
-    for src_dir_path in src_dirs_path_list:
-        if src_dir_path not in rep_dirs_path_list:
-            if not os.path.exists(rep_root_path / src_dir_path):
-                handle_dir('create', rep_root_path, src_dir_path)
 
-    for src_file_path in src_files_path_list:
-        if src_file_path in rep_files_path_list:
-            if not files_have_same_hash(
-                src_root_path / src_file_path, 
-                rep_root_path / src_file_path
-            ):
-                handle_file("update", src_root_path, rep_root_path, s_rel=src_file_path)
+def remove_directories(src_dir: Path, rep_dir: Path) -> None:
+    remove_paths = []
+    for path in rep_dir.glob("*/**"):
+        p_rel = src_dir / path.relative_to(rep_dir)
+        if not p_rel.exists():
+            remove_paths.append(path)
+
+    for path in remove_paths:
+        remove_dir(path)
+
+def create_files (src_dir: Path, rep_dir: Path) -> None:
+    for path in src_dir.glob("**/*.*"):
+        p_rel = rep_dir / path.relative_to(src_dir)
+        if p_rel.exists():
+            if not files_have_same_hash(path, p_rel):
+                update_file(path, p_rel)
         else:
-            handle_file("create", src_root_path, rep_root_path, s_rel=src_file_path)
+            create_file(path, p_rel)
 
-    for rep_file_path in rep_files_path_list:
-        if rep_file_path not in src_files_path_list:
-            handle_file("remove", src_root_path, rep_root_path, r_rel=rep_file_path)
+def remove_files (src_dir: Path, rep_dir: Path) -> None:
+    remove_paths = []
+    for path in rep_dir.glob("**/*.*"):
+        p_rel = src_dir / path.relative_to(rep_dir)
+        if not p_rel.exists():
+            remove_paths.append(path)
+    for path in remove_paths:
+        remove_file(path)
 
-    for rep_dir_path in rep_dirs_path_list:
-        if rep_dir_path not in src_dirs_path_list:
-            if not included_in_list_parents(rep_dir_path, src_dirs_path_list):
-                handle_dir('remove', rep_root_path, rep_dir_path)   
+def sync_folders(src_root_path: Path, rep_root_path: Path) -> None:
+    #change to glob
+    create_directories(src_root_path, rep_root_path)
+    create_files(src_root_path, rep_root_path)
+    remove_files(src_root_path, rep_root_path)
+    remove_directories(src_root_path, rep_root_path)
 
 
+def keyboard_interrupt_handle(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except KeyboardInterrupt:
+            logging.info('Program stopped manually.')
+            raise SystemExit
+        return func
+    return wrapper
+
+@keyboard_interrupt_handle
 def run_sync(src_path: Path, rep_path: Path, sync_interval: int) -> None:
     logging.info(f"***Initial info***")
     logging.info(f'Choosed source path:   {src_path}')
     logging.info(f"Choosed replica path:  {rep_path}")
     logging.info(f"Choosed sync interval: {sync_interval}s")
     logging.info(f"***Initial info***")
-
     schedule.every(sync_interval).seconds.do(
         sync_folders, src_path, rep_path
     )
+
+    # sync_folders(src_path, rep_path)
 
     while True:
         schedule.run_pending()
@@ -185,14 +161,15 @@ def get_parser() -> argparse.ArgumentParser:
     )
     return parser
 
+def validate_args() -> None:
+    pass
+
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
+    validate_args()
+
     config_logging(args.log_dir_path)
 
-    #change to decorate run_sync function
-    try:
-        run_sync(args.src_root_path, args.rep_root_path, args.sync_interval)
-    except KeyboardInterrupt:
-        logging.info('Program stopped manually.')
-        raise SystemExit
+    run_sync(args.src_root_path, args.rep_root_path, args.sync_interval)
+
