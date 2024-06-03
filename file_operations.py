@@ -2,31 +2,37 @@ import shutil
 import logging
 from pathlib import Path
 
-def logging_handle(prefix: str, suffix: int) -> None:
-    def logging_outer(func):
-        def wrapper(*args, **kwargs):
-            logging.info(f"{prefix}: {args[suffix]}")
+def log_error(func) -> None:
+    def wrapper(*args, **kwargs):
+        try:
             return func(*args, **kwargs)
-        return wrapper
-    return logging_outer
+        except Exception as e:
+            logging.error(str(e))
 
-@logging_handle('CREATED FILE', 1)
+    return wrapper
+
+@log_error
 def create_file(src: Path, dst: Path) -> None:
+    logging.info(f'CREATED FILE: {dst}')
     shutil.copy(src, dst)
 
-@logging_handle('REMOVED FILE', 0)
+@log_error
 def remove_file(dst: Path) -> None:
+    logging.info(f'REMOVED FILE: {dst}')
     Path.unlink(dst)
 
-@logging_handle('UPDATED FILE', 1)
+@log_error
 def update_file(src: Path, dst: Path) -> None:
+    logging.info(f'UPDATED FILE> {dst}')
     Path.unlink(dst)
     shutil.copy(src, dst)
 
-@logging_handle('CREATED DIR', 0)
+@log_error
 def create_dir(dst: Path) -> None:
+    logging.info(f'CREATED DIR: {dst}')
     dst.mkdir(parents=False, exist_ok=True)
 
-@logging_handle('REMOVED DIR', 0)
+@log_error
 def remove_dir(dst: Path) -> None:
+    logging.info(f'REMOVED DIR> {dst}')
     dst.rmdir()
