@@ -11,7 +11,6 @@ def temp_dir():
 
 @fixture
 def empty_playground(temp_dir):
-    print(temp_dir)
     src = Path(temp_dir + "/src")
     src.mkdir()
     rep = Path(temp_dir + "/rep")
@@ -34,7 +33,7 @@ def new_temp_dir(empty_playground):
 
     temp_dir = src / "new_dir"
     temp_dir.mkdir()
-    sync_folders(src, rep)
+    
     try:
         yield rep / "new_dir"
     finally:
@@ -47,7 +46,7 @@ def new_temp_file(empty_playground):
 
     temp_dir = src / "new_file.txt"
     temp_dir.touch()
-    sync_folders(src, rep)
+    
     try:
         yield rep / "new_file.txt"
     finally:
@@ -60,7 +59,7 @@ def spare_temp_file(empty_playground):
 
     temp_dir = rep / "new_file.txt"
     temp_dir.touch()
-    sync_folders(src, rep)
+
     try:
         yield rep / "new_file.txt"
     finally:
@@ -74,7 +73,7 @@ def spare_temp_dir(empty_playground):
 
     temp_dir = rep / "new_dir"
     temp_dir.mkdir()
-    sync_folders(src, rep)
+    
     try:
         yield rep / "new_dir"
     finally:
@@ -93,7 +92,6 @@ def different_file(empty_playground):
     fl2.touch()
     fl2.write_text("General, Kenobi")
 
-    sync_folders(src, rep)
     try:
         yield [fl1, fl2]
     finally:

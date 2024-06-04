@@ -8,19 +8,24 @@ import shutil
 from main import files_have_same_hash
 
 
-def test_new_dir(new_temp_dir):
+def test_new_dir(new_temp_dir, empty_playground):
+    sync_folders(empty_playground[0], empty_playground[1])
     assert new_temp_dir.exists()
 
-def test_new_file(new_temp_file):
+def test_new_file(new_temp_file, empty_playground):
+    sync_folders(empty_playground[0], empty_playground[1])
     assert new_temp_file.exists()
 
-def test_spare_file(spare_temp_file):
+def test_spare_file(spare_temp_file, empty_playground):
+    sync_folders(empty_playground[0], empty_playground[1])
     assert not spare_temp_file.exists()
 
-def test_spare_dir(spare_temp_dir):
+def test_spare_dir(spare_temp_dir, empty_playground):
+    sync_folders(empty_playground[0], empty_playground[1])
     assert not spare_temp_dir.exists()
 
-def test_changed_file(different_file):
+def test_changed_file(different_file, empty_playground):
+    sync_folders(empty_playground[0], empty_playground[1])
     fl1 = different_file[0]
     fl2 = different_file[1]
     assert files_have_same_hash(fl1, fl2)
