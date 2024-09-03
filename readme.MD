@@ -1,5 +1,7 @@
-#script to sync two folders to be identical copies
+# Synchronization project - pre-interview task
 
-#test by pytest, run pytest [-v] [-s] to test
+## script to sync two folders to be identical copies
 
-#dependencies in requrements.txt
+### test by pytest, run pytest [-v] [-s] to test
+
+### dependencies in requrements.txt

@@ -1,10 +1,6 @@
 from main import sync_folders, get_parser, validate_args
-import argparse
 from pathlib import Path
-from pytest import fixture
 import pytest
-import tempfile
-import shutil
 from main import files_have_same_hash
 
 
