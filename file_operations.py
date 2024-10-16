@@ -1,9 +1,12 @@
 import shutil
 import logging
+import functools
+
 from pathlib import Path
 
 
 def log_error(func) -> None:
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
