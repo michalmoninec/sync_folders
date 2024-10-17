@@ -41,17 +41,6 @@ def create_directories(src_dir: Path, rep_dir: Path) -> None:
             create_dir(p_rel)
 
 
-def remove_directories(src_dir: Path, rep_dir: Path) -> None:
-    rm_paths = []
-    for path in rep_dir.glob("*/**"):
-        p_rel = src_dir / path.relative_to(rep_dir)
-        if not p_rel.exists():
-            rm_paths.append(path)
-
-    for path in rm_paths[::-1]:
-        remove_dir(path)
-
-
 def create_files(src_dir: Path, rep_dir: Path, chunk_size: int) -> None:
     for path in src_dir.glob("**/*.*"):
         p_rel = rep_dir / path.relative_to(src_dir)
@@ -69,11 +58,15 @@ def remove_files(src_dir: Path, rep_dir: Path) -> None:
             remove_file(path)
 
 
-def sync_folders(src_root_path: Path, rep_root_path: Path, chunk_size: int) -> None:
-    create_directories(src_root_path, rep_root_path)
-    create_files(src_root_path, rep_root_path, chunk_size)
-    remove_files(src_root_path, rep_root_path)
-    remove_directories(src_root_path, rep_root_path)
+def remove_directories(src_dir: Path, rep_dir: Path) -> None:
+    rm_paths = []
+    for path in rep_dir.glob("*/**"):
+        p_rel = src_dir / path.relative_to(rep_dir)
+        if not p_rel.exists():
+            rm_paths.append(path)
+
+    for path in rm_paths[::-1]:
+        remove_dir(path)
 
 
 def keyboard_interrupt_handle(func):
@@ -105,6 +98,13 @@ def run_sync(
         schedule.run_pending()
 
 
+def sync_folders(src_root_path: Path, rep_root_path: Path, chunk_size: int) -> None:
+    create_directories(src_root_path, rep_root_path)
+    create_files(src_root_path, rep_root_path, chunk_size)
+    remove_files(src_root_path, rep_root_path)
+    remove_directories(src_root_path, rep_root_path)
+
+
 def config_logging(log_path: Path) -> None:
     log_name = datetime.now().strftime("%Y_%m_%d_%H%M%S.log")
     log_path = Path(args.log_dir_path, log_name)
@@ -121,6 +121,37 @@ def config_logging(log_path: Path) -> None:
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(log_formatter)
     logging.getLogger().addHandler(console_handler)
+
+
+def get_valid_abs_path(argument: str) -> Path:
+    if Path(argument).absolute().exists():
+        return Path(argument).absolute()
+    else:
+        raise argparse.ArgumentTypeError(
+            "Directory does't exist. \n"
+            "Provide existing directory, or create requested directory."
+        )
+
+
+def get_valid_positive_integer(arg: str, context: str) -> int:
+    if int(arg) > 0:
+        return int(arg)
+    else:
+        raise argparse.ArgumentTypeError(f"{context} must be greater than 0")
+
+
+def validate_args(
+    parser: argparse.ArgumentParser,
+    src: Path,
+    rep: Path,
+    log: Path,
+) -> None:
+
+    if log == src or log == rep:
+        raise parser.error("Log direcotry cannot be the same as source of rep")
+
+    if src in log.parents or rep in log.parents:
+        raise parser.error("Log directory cannot be inside source or replica folder")
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -155,40 +186,10 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def get_valid_abs_path(argument: str) -> Path:
-    if Path(argument).absolute().exists():
-        return Path(argument).absolute()
-    else:
-        raise argparse.ArgumentTypeError(
-            "Directory does't exist. \n"
-            "Provide existing directory, or create requested directory."
-        )
-
-
-def get_valid_positive_integer(arg: str, context: str) -> int:
-    if int(arg) > 0:
-        return int(arg)
-    else:
-        raise argparse.ArgumentTypeError(f"{context} must be greater than 0")
-
-
-def validate_args(
-    parser: argparse.ArgumentParser,
-    src: Path,
-    rep: Path,
-    log: Path,
-) -> None:
-
-    if log == src or log == rep:
-        raise parser.error("Log direcotry cannot be the same as source of rep")
-
-    if src in log.parents or rep in log.parents:
-        raise parser.error("Log directory cannot be inside source or replica folder")
-
-
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
+
     validate_args(
         parser,
         args.src_root_path,
