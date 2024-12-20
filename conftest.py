@@ -1,4 +1,8 @@
-from main import sync_folders
+"""
+This module contains pytest fixtures for setting up and tearing down
+temporary directories and files for testing the sync_folders functionality.
+"""
+
 from pathlib import Path
 from pytest import fixture
 import shutil
@@ -7,17 +11,32 @@ import tempfile
 
 @fixture
 def temp_dir():
+    """
+    Fixture to create a temporary directory.
+
+    Yields:
+        str: The path to the temporary directory.
+    """
     with tempfile.TemporaryDirectory() as tmpdirname:
         yield tmpdirname
 
 
 @fixture
 def empty_playground(temp_dir):
-    src = Path(temp_dir + "/src")
+    """
+    Fixture to set up an empty playground with source, replica, and log directories.
+
+    Args:
+        temp_dir (str): The path to the temporary directory.
+
+    Yields:
+        dict: A dictionary containing paths to the source, replica, and log directories.
+    """
+    src = Path(temp_dir) / "src"
     src.mkdir()
-    rep = Path(temp_dir + "/rep")
+    rep = Path(temp_dir) / "rep"
     rep.mkdir()
-    log = Path(temp_dir + "/log")
+    log = Path(temp_dir) / "log"
     log.mkdir()
     data = {"src": src, "rep": rep, "log": log}
     try:
@@ -30,6 +49,15 @@ def empty_playground(temp_dir):
 
 @fixture
 def new_temp_dir(empty_playground):
+    """
+    Fixture to create a new temporary directory in the source directory.
+
+    Args:
+        empty_playground (dict): A dictionary containing paths to the source, replica, and log directories.
+
+    Yields:
+        Path: The path to the new temporary directory in the replica directory.
+    """
     src = empty_playground["src"]
     rep = empty_playground["rep"]
 
@@ -44,44 +72,69 @@ def new_temp_dir(empty_playground):
 
 @fixture
 def new_temp_file(empty_playground):
+    """
+    Fixture to create a new temporary file in the source directory.
+
+    Args:
+        empty_playground (dict): A dictionary containing paths to the source, replica, and log directories.
+
+    Yields:
+        Path: The path to the new temporary file in the replica directory.
+    """
     src = empty_playground["src"]
     rep = empty_playground["rep"]
 
-    temp_dir = src / "new_file.txt"
-    temp_dir.touch()
+    temp_file = src / "new_file.txt"
+    temp_file.touch()
 
     try:
         yield rep / "new_file.txt"
     finally:
-        temp_dir.unlink()
+        temp_file.unlink()
 
 
 @fixture
 def spare_temp_file(empty_playground):
+    """
+    Fixture to create a spare temporary file in the replica directory.
+
+    Args:
+        empty_playground (dict): A dictionary containing paths to the source, replica, and log directories.
+
+    Yields:
+        Path: The path to the spare temporary file in the replica directory.
+    """
     rep = empty_playground["rep"]
 
-    temp_dir = rep / "new_file.txt"
-    temp_dir.touch()
+    temp_file = rep / "new_file.txt"
+    temp_file.touch()
 
     try:
-        yield temp_dir
+        yield temp_file
     finally:
-        if temp_dir.exists():
-            temp_dir.unlink()
+        temp_file.unlink()
 
 
 @fixture
 def spare_temp_dir(empty_playground):
+    """
+    Fixture to create a spare temporary directory in the replica directory.
+
+    Args:
+        empty_playground (dict): A dictionary containing paths to the source, replica, and log directories.
+
+    Yields:
+        Path: The path to the spare temporary directory in the replica directory.
+    """
     rep = empty_playground["rep"]
 
-    temp_dir = rep / "new_dir"
+    temp_dir = rep / "spare_dir"
     temp_dir.mkdir()
 
     try:
         yield temp_dir
     finally:
-        if temp_dir.exists():
-            temp_dir.rmdir()
+        temp_dir.rmdir()
 
 
 @fixture

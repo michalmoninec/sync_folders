@@ -47,5 +47,5 @@ python main.py --src_root_path --rep_root_path --log_dir_path --sync_interval
 ### Run tests
 
 ```bash
-pytest [-v] [-s] to test
+pytest [-v] [-s]
 ```
