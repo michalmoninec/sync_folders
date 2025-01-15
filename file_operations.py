@@ -53,7 +53,8 @@ def remove_file(dst: Path) -> None:
 @log_error
 def update_file(src: Path, dst: Path) -> None:
     """
-    Update a file by removing the old file and copying the new file from source to destination.
+    Update a file by removing the old file and copying the new file
+    from source to destination.
 
     Args:
         src (Path): The source file path.

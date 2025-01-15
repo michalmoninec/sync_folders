@@ -3,6 +3,11 @@ from pathlib import Path
 from main import sync_folders, get_parser, validate_args, files_have_same_hash
 
 
+def test_failed():
+    """Random update"""
+    pass
+
+
 def test_new_dir(new_temp_dir, empty_playground):
     """
     Test that a new directory is created in the replica directory.

@@ -312,7 +312,6 @@ if __name__ == "__main__":
         args.src_root_path,
         args.rep_root_path,
         args.log_dir_path,
-        args.chunk_size,
     )
 
     config_logging(args.log_dir_path)
