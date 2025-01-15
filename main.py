@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 import hashlib
 import argparse
@@ -154,11 +153,11 @@ def run_sync(
         sync_interval (int): Interval in seconds between sync operations.
         chunk_size (int): Size of the chunks to read from the files for comparison.
     """
-    logging.info(f"***Initial info***")
+    logging.info("***Initial info***")
     logging.info(f"Choosed source path:   {src_path}")
     logging.info(f"Choosed replica path:  {rep_path}")
     logging.info(f"Choosed sync interval: {sync_interval}s")
-    logging.info(f"***Initial info***")
+    logging.info("***Initial info***")
     schedule.every(sync_interval).seconds.do(
         sync_folders, src_path, rep_path, chunk_size
     )

@@ -1,5 +1,4 @@
 import pytest
-import argparse
 from pathlib import Path
 from main import sync_folders, get_parser, validate_args, files_have_same_hash
 
