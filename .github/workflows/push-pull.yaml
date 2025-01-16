@@ -27,10 +27,10 @@ jobs:
                   python -m pip install --upgrade pip
                   pip install .
 
-            # # Step 4: Install pre-commit
-            # - name: Install pre-commit
-            #   run: |
-            #       pip install pre-commit
+            # Step 4: Install pre-commit hooks
+            - name: Install pre-commit hooks
+              run: |
+                  pre-commit install
 
             # Step 5: Run pre-commit hooks
             - name: Run pre-commit hooks

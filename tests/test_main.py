@@ -2,7 +2,7 @@ import pytest
 
 
 from pathlib import Path
-from main import (
+from src.main import (
     sync_folders,
     get_parser,
     validate_args,
