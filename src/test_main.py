@@ -1,6 +1,13 @@
 import pytest
+
+
 from pathlib import Path
-from main import sync_folders, get_parser, validate_args, files_have_same_hash
+from main import (
+    sync_folders,
+    get_parser,
+    validate_args,
+    files_have_same_hash,
+)
 
 
 def test_failed():
